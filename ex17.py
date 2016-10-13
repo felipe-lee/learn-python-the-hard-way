@@ -1,4 +1,4 @@
-from sys import argv
+from sys import argv, exit
 from os.path import exists
 
 
