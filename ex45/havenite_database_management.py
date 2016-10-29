@@ -4,16 +4,32 @@ import sqlite3
 class HaveniteDatabaseManager(object):
 
     def __init__(self, *args, **kwargs):
-        connection = sqlite3.connect(database='havenite.sqlite3')
-        self.c = connection.cursor()
+        self.connection = sqlite3.connect(database='havenite.sqlite3')
+        self.c = self.connection.cursor()
 
         self.c.execute("""PRAGMA foreign_keys = ON;""")
 
-    def add_race(self):
-        self.c.execute("""
-        INSERT INTO RACE(NAME)
-        VALUES (
-        );""")
+    def insert_into_table(self, table, columns, data):
+        if not isinstance(columns, (list, tuple, set)):
+            if isinstance(columns, str):
+                columns = [columns]
+            else:
+                raise NotImplementedError("Columns must be a list, tuple, or set.")
+
+        if not isinstance(data, (list, tuple, set)):
+            if isinstance(data, str):
+                data = [data]
+            else:
+                raise NotImplementedError("Columns must be a list, tuple, or set.")
+
+        query = 'INSERT INTO {table} ({columns}) VALUES (?)'.\
+            format(table=table.upper(), columns=', '.join(columns).upper())
+
+        try:
+            with self.connection:
+                self.c.execute(query, data)
+        except sqlite3.IntegrityError as err:
+            print 'Error saving data: {0}'.format(err)
 
     def setup_database(self):
         self.c.execute("""
